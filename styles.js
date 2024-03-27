@@ -74,4 +74,37 @@ export const styles = StyleSheet.create({
     resizeMode: "contain",
     backgroundColor: "#bcbfc2",
   },
+  form: {
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: width * 0.9, // 90% of screen width
+  },
+  input_fields: {
+    width: width * 0.9,
+    alignItems: "flex-start",
+    justifyContent: "center",
+    marginBottom: height * 0.03, // Adjusted margin bottom
+  },
+  textInputs: {
+    borderStyle: "solid",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
+    height: height * 0.07, // 7% of screen height
+    width: width * 0.9, // 90% of screen width
+    fontSize: width * 0.04, // 4% of screen width
+  },
+  password_field_icon: {
+    width: 20, // 5% of screen width
+    height: 20, // 5% of screen width
+    position: "absolute",
+    top: height * -0.04, // 5% of screen height
+    right: width * -0.88, // 8% of screen width
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: width * 0.05,
+    marginBottom: height * 0.05, // 5% of screen height
+  },
 });
