@@ -107,4 +107,24 @@ export const styles = StyleSheet.create({
     gap: width * 0.05,
     marginBottom: height * 0.05, // 5% of screen height
   },
+  logout_icon: {
+    position: "absolute",
+    top: height * 0.12,
+    left: width * 0.38,
+    width: width * 0.09,
+    height: height * 0.04,
+    resizeMode: "contain",
+  },
+  social_icon_container: {
+    flexDirection: "row",
+    height: height * 0.12,
+    width: width * 0.8,
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    marginBottom: height * 0.15,
+  },
+  social_icon: {
+    width: width * 0.12,
+    height: height * 0.063,
+  },
 });
