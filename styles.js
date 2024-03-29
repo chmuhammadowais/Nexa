@@ -127,4 +127,27 @@ export const styles = StyleSheet.create({
     width: width * 0.12,
     height: height * 0.063,
   },
+  scrollViewContent: { flexGrow: 1 },
+  container_table: {
+    flex: 1,
+    width: width * 0.95,
+    marginBottom: height * 0.1,
+    alignSelf: "flex-start",
+  },
+  head: {
+    height: height * 0.06,
+    backgroundColor: "#abafab",
+  },
+
+  row: {
+    flexDirection: "row",
+    backgroundColor: "#c8cecb",
+    width: width * 0.95,
+  },
+  platformIcon: {
+    width: width * 0.05,
+    height: height * 0.05,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
 });
