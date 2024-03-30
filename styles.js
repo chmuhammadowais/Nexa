@@ -150,4 +150,18 @@ export const styles = StyleSheet.create({
     resizeMode: "contain",
     alignSelf: "center",
   },
+  mic_btn_container: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: width * 0.5,
+    height: width * 0.5,
+    margin: width * 0.3,
+    borderRadius: 100,
+    backgroundColor: "#bcbfc2",
+    borderWidth: 5,
+  },
+  mic_btn_image: {
+    width: width * 0.3,
+    height: width * 0.4,
+  },
 });
