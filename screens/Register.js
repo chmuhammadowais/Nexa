@@ -7,13 +7,27 @@ import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
 export default function Register({ dispatch }) {
   const [show_pass, setShow_pass] = useState(true);
+
   const [msg, setMsg] = useState("");
   const [full_name, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [conf_pass, setConf_pass] = useState("");
   const profile_pic_path = get_profile_pic_path();
-
+  function handle_Registration() {
+    if (password === conf_pass) {
+      register(
+        full_name,
+        email,
+        password,
+        profile_pic_path,
+        setErr,
+        setMsg
+      ).catch((err) => setErr(err.message));
+    } else {
+      setErr("Passwords do not match");
+    }
+  }
   return (
     <View style={styles.container}>
       <View style={styles.headers}>
@@ -87,7 +101,9 @@ export default function Register({ dispatch }) {
               Cancel
             </Text>
 
-            <Text style={styles.customBtn}>Register</Text>
+            <Text style={styles.customBtn} onPress={handle_Registration}>
+              Register
+            </Text>
           </View>
         ) : (
           <View style={styles.footer}>
@@ -102,4 +118,62 @@ export default function Register({ dispatch }) {
       </View>
     </View>
   );
+}
+async function register(
+  full_name,
+  email,
+  password,
+  profile_pic_path,
+  setErr,
+  setMsg
+) {
+  if (!full_name || !email || !password) {
+    throw new Error("Please provide all the fields");
+  }
+  if (!validateEmail(email)) {
+    throw new Error("Please provide valid email");
+  }
+  try {
+    const timeoutMs = 6000; // 6 seconds
+    const response = await Promise.race([
+      fetch("http://192.168.0.106:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: full_name,
+          email: email,
+          password: password,
+          profile_pic_path: profile_pic_path ? profile_pic_path : null,
+        }),
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out")), timeoutMs)
+      ),
+    ]);
+
+    if (response) {
+      const data = await response.text();
+      // const dataJSON = JSON.parse(data);
+      if (response.ok) {
+        // console.log("Response from server:", dataJSON.message);
+        console.log("Response from server:", data);
+        // Optionally, set a success message
+        setMsg("Your account has been created, please log in to continue.");
+      } else {
+        console.log("Response from server:", data);
+        setErr("Error creating the profile. Profile might already exist");
+      }
+    } else {
+      setErr("Request timed out. Please try again later.");
+    }
+  } catch (e) {
+    console.log(e);
+    setErr("An error occurred. Please try again later.");
+  }
+}
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }

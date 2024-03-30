@@ -57,6 +57,7 @@ export default function Login({ dispatch }) {
             style={styles.customBtn}
             onPress={() => {
               console.log(`Email: ${email}, Password: ${password}`);
+              check_cred(email, password, dispatch, setErr);
             }}
           >
             Login
@@ -65,4 +66,60 @@ export default function Login({ dispatch }) {
       </View>
     </View>
   );
+}
+async function check_cred(email, password, dispatch, setErr) {
+  if (!email || !password) {
+    setErr("Please check the input fields");
+    return;
+  }
+  try {
+    // Construct URL with parameters
+    const url = `http://192.168.0.106:5000/login?email=${encodeURIComponent(
+      email
+    )}&password=${encodeURIComponent(password)}`;
+
+    // Set a timeout value (in milliseconds)
+    const timeoutMs = 6000; // 6 seconds
+
+    // Send GET request with timeout
+    const response = await Promise.race([
+      fetch(url),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out")), timeoutMs)
+      ),
+    ]);
+
+    // Check if response exists
+    if (response) {
+      // Check if response status is in the range 200-299 (indicating success)
+      if (response.status >= 200 && response.status < 300) {
+        // If request is successful, proceed with further actions
+        const data = await response.text();
+        const dataJson = JSON.parse(data);
+
+        console.log("Response from server:", data);
+        setErr("");
+        dispatch({
+          type: "homeScreen",
+          payload: {
+            full_name: dataJson.full_name,
+            email: dataJson.email,
+            password: dataJson.password,
+            profile_pic_path: dataJson.profile_pic_path,
+            auth_key: dataJson.auth_key,
+          },
+        });
+      } else {
+        // If request fails, set error message
+        setErr("Please check your credentials again");
+      }
+    } else {
+      // If response is null (indicating timeout), set error message
+      setErr("Request timed out. Please try again later.");
+    }
+  } catch (error) {
+    // If an error occurs during the request, log it and set error message
+    console.error(error);
+    setErr("An error occurred. Please try again later.");
+  }
 }
