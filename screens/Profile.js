@@ -73,7 +73,27 @@ export default function Profile({ dispatch, user }) {
             />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Text style={styles.customBtn_solo}>Update</Text>
+            <Text
+              style={styles.customBtn_solo}
+              onPress={() =>
+                update_info(
+                  temp_full_name || full_name,
+                  temp_email ? temp_email : email,
+                  validate_fields(
+                    temp_prev_pass,
+                    temp_new_pass,
+                    password,
+                    setErr
+                  ),
+                  get_profile_pic_path(),
+                  setErr,
+                  setMsg,
+                  dispatch
+                )
+              }
+            >
+              Update
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={styles.social_icon_container}>
@@ -94,4 +114,86 @@ export default function Profile({ dispatch, user }) {
       <Bottom_menu dispatch={dispatch} user={user} />
     </>
   );
+}
+function notifyMessage(msg) {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(msg, ToastAndroid.SHORT);
+  } else {
+    AlertIOS.alert(msg);
+  }
+}
+function validate_fields(temp_prev_pass, temp_new_pass, password, setErr) {
+  if (!temp_prev_pass) {
+    setErr("Please check the password field again");
+    return null;
+  }
+  if (temp_prev_pass !== password) {
+    setErr("Previous password is incorrect");
+    return null;
+  }
+  if (temp_new_pass === password) {
+    setErr("Same password being set again");
+    return null;
+  } else {
+    setErr("");
+    return temp_new_pass ? temp_new_pass : password;
+  }
+}
+async function update_info(
+  full_name,
+  email,
+  password,
+  profile_pic_path,
+  setErr,
+  setMsg,
+  dispatch
+) {
+  if (!password || !email) {
+    console.log("Password or Email is null");
+  } else if (!validateEmail(email)) {
+    setErr("Invalid Email");
+  } else {
+    setErr("");
+    try {
+      const response = await fetch("http://192.168.0.106:5000/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: full_name,
+          email: email,
+          password: password,
+          profile_pic_path: profile_pic_path,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.text();
+
+        console.log("Response from server:", data);
+        setErr("");
+        setMsg("Profile Updated");
+        notifyMessage(`Profile updated`);
+        dispatch({
+          type: "updateProfile",
+          payload: {
+            full_name,
+            email,
+            password,
+            profile_pic_path,
+          },
+        });
+      } else {
+        setErr("Please check your credentials again");
+      }
+    } catch (e) {
+      console.log(e);
+      setErr(e);
+    }
+  }
+}
+
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
