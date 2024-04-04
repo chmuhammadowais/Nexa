@@ -5,9 +5,9 @@ import Error_msg, { setErrorText as setErr } from "../components/Error_msg";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
+import { Loader, handleLoader } from "../components/Loader";
 export default function Register({ dispatch }) {
   const [show_pass, setShow_pass] = useState(true);
-
   const [msg, setMsg] = useState("");
   const [full_name, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,20 +16,16 @@ export default function Register({ dispatch }) {
   const profile_pic_path = get_profile_pic_path();
   function handle_Registration() {
     if (password === conf_pass) {
-      register(
-        full_name,
-        email,
-        password,
-        profile_pic_path,
-        setErr,
-        setMsg
-      ).catch((err) => setErr(err.message));
+      register(full_name, email, password, profile_pic_path, setMsg).catch(
+        (err) => setErr(err.message)
+      );
     } else {
       setErr("Passwords do not match");
     }
   }
   return (
     <View style={styles.container}>
+      <Loader />
       <View style={styles.headers}>
         <Main_heading text={"Nexa"} />
       </View>
@@ -119,14 +115,7 @@ export default function Register({ dispatch }) {
     </View>
   );
 }
-async function register(
-  full_name,
-  email,
-  password,
-  profile_pic_path,
-  setErr,
-  setMsg
-) {
+async function register(full_name, email, password, profile_pic_path, setMsg) {
   if (!full_name || !email || !password) {
     throw new Error("Please provide all the fields");
   }
@@ -134,6 +123,7 @@ async function register(
     throw new Error("Please provide valid email");
   }
   try {
+    handleLoader();
     const timeoutMs = 6000; // 6 seconds
     const response = await Promise.race([
       fetch("http://192.168.0.106:5000/register", {
@@ -171,6 +161,8 @@ async function register(
   } catch (e) {
     console.log(e);
     setErr("An error occurred. Please try again later.");
+  } finally {
+    handleLoader();
   }
 }
 function validateEmail(email) {

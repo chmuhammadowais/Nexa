@@ -7,6 +7,7 @@ import Error_msg, { setErrorText as setErr } from "../components/Error_msg";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
+import { Loader, handleLoader } from "../components/Loader";
 export default function Profile({ dispatch, user }) {
   const [full_name] = useState(user.full_name);
   const [temp_full_name, setTempFullName] = useState("");
@@ -23,6 +24,7 @@ export default function Profile({ dispatch, user }) {
   return (
     <>
       <View style={styles.container}>
+        <Loader />
         <TouchableOpacity onPress={() => dispatch({ type: "cancelOperation" })}>
           <Image
             style={styles.logout_icon}
@@ -155,6 +157,7 @@ async function update_info(
   } else {
     setErr("");
     try {
+      handleLoader();
       const response = await fetch("http://192.168.0.106:5000/update", {
         method: "PUT",
         headers: {
@@ -189,6 +192,8 @@ async function update_info(
     } catch (e) {
       console.log(e);
       setErr(e);
+    } finally {
+      handleLoader();
     }
   }
 }

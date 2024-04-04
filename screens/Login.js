@@ -4,17 +4,20 @@ import { useState } from "react";
 import Error_msg, { setErrorText as setErr } from "../components/Error_msg";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
+import { Loader, handleLoader } from "../components/Loader";
 export default function Login({ dispatch }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show_pass, setShow_pass] = useState(true);
   return (
     <View style={styles.container}>
+      <Loader />
       <View style={styles.headers}>
         <Main_heading text={"Nexa"} />
       </View>
 
       <View style={styles.form}>
+        {/*<Text style={styles.err_msg}>{err}</Text>*/}
         <Error_msg />
         <Sub_heading text={"Login"} />
 
@@ -73,10 +76,9 @@ async function check_cred(email, password, dispatch, setErr) {
     return;
   }
   try {
+    handleLoader();
     // Construct URL with parameters
-    const url = `http://192.168.0.106:5000/login?email=${encodeURIComponent(
-      email
-    )}&password=${encodeURIComponent(password)}`;
+    const url = `http://192.168.0.106:5000/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
     // Set a timeout value (in milliseconds)
     const timeoutMs = 6000; // 6 seconds
@@ -121,5 +123,7 @@ async function check_cred(email, password, dispatch, setErr) {
     // If an error occurs during the request, log it and set error message
     console.error(error);
     setErr("An error occurred. Please try again later.");
+  } finally {
+    handleLoader();
   }
 }
