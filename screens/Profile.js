@@ -8,6 +8,7 @@ import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
 import { Loader, handleLoader } from "../components/Loader";
+import Constants from "expo-constants";
 export default function Profile({ dispatch, user }) {
   const [full_name] = useState(user.full_name);
   const [temp_full_name, setTempFullName] = useState("");
@@ -158,7 +159,9 @@ async function update_info(
     setErr("");
     try {
       handleLoader();
-      const response = await fetch("http://192.168.0.106:5000/update", {
+      const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
+      const port = Constants.expoConfig.extra.PORT;
+      const response = await fetch(`http://${ip_address}:${port}/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

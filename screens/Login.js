@@ -5,6 +5,7 @@ import Error_msg, { setErrorText as setErr } from "../components/Error_msg";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import { Loader, handleLoader } from "../components/Loader";
+import Constants from "expo-constants";
 export default function Login({ dispatch }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,8 +78,10 @@ async function check_cred(email, password, dispatch, setErr) {
   }
   try {
     handleLoader();
+    const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
+    const port = Constants.expoConfig.extra.PORT;
     // Construct URL with parameters
-    const url = `http://192.168.0.106:5000/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+    const url = `http://${ip_address}:${port}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
     // Set a timeout value (in milliseconds)
     const timeoutMs = 6000; // 6 seconds

@@ -6,6 +6,7 @@ import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
 import { Loader, handleLoader } from "../components/Loader";
+import Constants from "expo-constants";
 export default function Register({ dispatch }) {
   const [show_pass, setShow_pass] = useState(true);
   const [msg, setMsg] = useState("");
@@ -124,9 +125,11 @@ async function register(full_name, email, password, profile_pic_path, setMsg) {
   }
   try {
     handleLoader();
+    const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
+    const port = Constants.expoConfig.extra.PORT;
     const timeoutMs = 6000; // 6 seconds
     const response = await Promise.race([
-      fetch("http://192.168.0.106:5000/register", {
+      fetch(`http://${ip_address}:${port}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +138,7 @@ async function register(full_name, email, password, profile_pic_path, setMsg) {
           full_name: full_name,
           email: email,
           password: password,
-          profile_pic_path: profile_pic_path ? profile_pic_path : null,
+          profile_pic_path: profile_pic_path ? profile_pic_path : "",
         }),
       }),
       new Promise((_, reject) =>
