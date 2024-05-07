@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Image, TouchableOpacity, Alert } from "react-native";
 import { styles } from "../styles";
 import axios from "axios";
 import { Audio } from "expo-av";
+import * as MediaLibrary from "expo-media-library";
 import Bottom_menu from "../components/Bottom_menu";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
@@ -10,6 +11,27 @@ import Sub_heading from "../components/Sub_heading";
 export default function Home({ dispatch, user }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
+  const [recentImage, setRecentImage] = useState(null);
+
+  useEffect(() => {
+    // Function to fetch the most recent image from the gallery
+    const fetchRecentImage = async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+            "Permission required",
+            "Please grant media library permission to use this feature."
+        );
+        return;
+      }
+      const assets = await MediaLibrary.getAssetsAsync({ first: 1 }); // Fetch only the first (most recent) image
+      if (assets && assets.assets.length > 0) {
+        setRecentImage(assets.assets[0].uri);
+      }
+    };
+    fetchRecentImage(); // Call the function on component mount
+  }, []); // Empty dependency array to execute the effect only once
+
 
   const startRecording = async () => {
     try {
@@ -49,6 +71,15 @@ export default function Home({ dispatch, user }) {
         type: "audio/m4a",
         name: "command.m4a",
       });
+      if (recentImage) {
+        // Get the image file name from the URI
+        const fileName = recentImage.split("/").pop();
+        formData.append("imageFile", {
+          uri: recentImage,
+          type: "image/jpeg", // Change the type based on the image format
+          name: fileName,
+        });
+      }
 
       const response = await axios.post(
         "http://192.168.0.106:5000/upload",

@@ -27,7 +27,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "IP_ADDRESS": "172.25.0.159",
+      "IP_ADDRESS": "192.168.0.106",
       "PORT": "5000"
     }
   }
