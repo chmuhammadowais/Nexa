@@ -64,7 +64,7 @@ export default function Home({ dispatch, user }) {
       setRecording(null);
 
       const uri = recording.getURI(); // Get audio URI synchronously after stopping recording
-
+      console.log(recording)
       const formData = new FormData();
       formData.append("file", {
         uri,
@@ -82,7 +82,7 @@ export default function Home({ dispatch, user }) {
       }
 
       const response = await axios.post(
-        "http://192.168.0.106:5000/upload",
+        "http://192.168.187.126:5000/upload",
         formData,
         {
           headers: {
@@ -90,8 +90,12 @@ export default function Home({ dispatch, user }) {
           },
         }
       );
-
+      Alert.alert(
+          "Success",
+          "Command uploaded successfully",
+      );
       console.log("Transcribed text:", response.data);
+
     } catch (error) {
       console.error(
         "Failed to stop recording or convert speech to text",
