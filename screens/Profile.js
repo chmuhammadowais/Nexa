@@ -8,13 +8,12 @@ import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
 import Profile_pic, { get_profile_pic_path } from "../components/Profile_pic";
 import { Loader, handleLoader } from "../components/Loader";
-import Constants from "expo-constants";
 export default function Profile({ dispatch, user }) {
+  const [user_id, setUser_id] = useState(user.user_id);
   const [full_name] = useState(user.full_name);
   const [temp_full_name, setTempFullName] = useState("");
   const [email] = useState(user.email);
   const [temp_email, setTemp_Email] = useState("");
-  const [password] = useState(user.password);
   const [profile_pic_path] = useState(user.profile_pic_path);
   const [temp_prev_pass, setTempPrevPass] = useState("");
   const [temp_new_pass, setTempNewPass] = useState("");
@@ -80,14 +79,11 @@ export default function Profile({ dispatch, user }) {
               style={styles.customBtn_solo}
               onPress={() =>
                 update_info(
+                  user_id,
                   temp_full_name || full_name,
                   temp_email ? temp_email : email,
-                  validate_fields(
-                    temp_prev_pass,
-                    temp_new_pass,
-                    password,
-                    setErr
-                  ),
+                  temp_prev_pass,
+                  temp_new_pass,
                   get_profile_pic_path(),
                   setErr,
                   setMsg,
@@ -100,18 +96,36 @@ export default function Profile({ dispatch, user }) {
           </TouchableOpacity>
         </View>
         <View style={styles.social_icon_container}>
-          <Image
-            style={styles.social_icon}
-            source={require("../assets/instagram.png")}
-          />
-          <Image
-            style={styles.social_icon}
-            source={require("../assets/pinterest.png")}
-          />
-          <Image
-            style={styles.social_icon}
-            source={require("../assets/twitter.png")}
-          />
+          <TouchableOpacity
+            onPress={() =>
+              dispatch({ type: "InstagramAccount", payload: true })
+            }
+          >
+            <Image
+              style={styles.social_icon}
+              source={require("../assets/instagram.png")}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              dispatch({ type: "PinterestAccount", payload: true })
+            }
+          >
+            <Image
+              style={styles.social_icon}
+              source={require("../assets/pinterest.png")}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => dispatch({ type: "TwitterAccount", payload: true })}
+          >
+            <Image
+              style={styles.social_icon}
+              source={require("../assets/twitter.png")}
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <Bottom_menu dispatch={dispatch} user={user} />
@@ -125,33 +139,18 @@ function notifyMessage(msg) {
     AlertIOS.alert(msg);
   }
 }
-function validate_fields(temp_prev_pass, temp_new_pass, password, setErr) {
-  if (!temp_prev_pass) {
-    setErr("Please check the password field again");
-    return null;
-  }
-  if (temp_prev_pass !== password) {
-    setErr("Previous password is incorrect");
-    return null;
-  }
-  if (temp_new_pass === password) {
-    setErr("Same password being set again");
-    return null;
-  } else {
-    setErr("");
-    return temp_new_pass ? temp_new_pass : password;
-  }
-}
 async function update_info(
+  user_id,
   full_name,
   email,
-  password,
+  temp_prev_pass,
+  temp_new_pass,
   profile_pic_path,
   setErr,
   setMsg,
   dispatch
 ) {
-  if (!password || !email) {
+  if (!temp_prev_pass || !email) {
     console.log("Password or Email is null");
   } else if (!validateEmail(email)) {
     setErr("Invalid Email");
@@ -159,42 +158,49 @@ async function update_info(
     setErr("");
     try {
       handleLoader();
-      const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
-      const port = Constants.expoConfig.extra.PORT;
-      const response = await fetch(`http://${ip_address}:${port}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          full_name: full_name,
-          email: email,
-          password: password,
-          profile_pic_path: profile_pic_path,
-        }),
-      });
+      const response = await fetch(
+        `https://lion-optimal-sawfish.ngrok-free.app/api/update-profile`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user_id,
+            full_name: full_name,
+            email: email,
+            prev_pass: temp_prev_pass,
+            new_pass: temp_new_pass,
+            profile_pic_path: profile_pic_path,
+          }),
+        }
+      );
       if (response.ok) {
         const data = await response.text();
-
+        const dataJson = JSON.parse(data);
         console.log("Response from server:", data);
-        setErr("");
-        setMsg("Profile Updated");
-        notifyMessage(`Profile updated`);
-        dispatch({
-          type: "updateProfile",
-          payload: {
-            full_name,
-            email,
-            password,
-            profile_pic_path,
-          },
-        });
+        if (dataJson.success === true) {
+          setErr("");
+          setMsg("Profile Updated");
+          notifyMessage(`Profile updated`);
+          dispatch({
+            type: "updateProfile",
+            payload: {
+              user_id,
+              full_name,
+              email,
+              profile_pic_path,
+            },
+          });
+        } else if (dataJson.success === false) {
+          setErr(dataJson.message);
+        }
       } else {
         setErr("Please check your credentials again");
       }
     } catch (e) {
       console.log(e);
-      setErr(e);
+      setErr(e.message);
     } finally {
       handleLoader();
     }

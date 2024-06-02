@@ -7,8 +7,11 @@ import * as MediaLibrary from "expo-media-library";
 import Bottom_menu from "../components/Bottom_menu";
 import Main_heading from "../components/Main_heading";
 import Sub_heading from "../components/Sub_heading";
-
+import Constants from "expo-constants";
 export default function Home({ dispatch, user }) {
+  const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
+  const port = Constants.expoConfig.extra.PORT;
+  const [user_id, setUser_id] = useState(user.user_id);
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
   const [recentImage, setRecentImage] = useState(null);
@@ -19,8 +22,8 @@ export default function Home({ dispatch, user }) {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
-            "Permission required",
-            "Please grant media library permission to use this feature."
+          "Permission required",
+          "Please grant media library permission to use this feature."
         );
         return;
       }
@@ -31,7 +34,6 @@ export default function Home({ dispatch, user }) {
     };
     fetchRecentImage(); // Call the function on component mount
   }, []); // Empty dependency array to execute the effect only once
-
 
   const startRecording = async () => {
     try {
@@ -64,9 +66,10 @@ export default function Home({ dispatch, user }) {
       setRecording(null);
 
       const uri = recording.getURI(); // Get audio URI synchronously after stopping recording
-      console.log(recording)
+      console.log(recording);
       const formData = new FormData();
-      formData.append("file", {
+      formData.append("id", user_id);
+      formData.append("voice", {
         uri,
         type: "audio/m4a",
         name: "command.m4a",
@@ -74,7 +77,7 @@ export default function Home({ dispatch, user }) {
       if (recentImage) {
         // Get the image file name from the URI
         const fileName = recentImage.split("/").pop();
-        formData.append("imageFile", {
+        formData.append("image", {
           uri: recentImage,
           type: "image/jpeg", // Change the type based on the image format
           name: fileName,
@@ -82,7 +85,7 @@ export default function Home({ dispatch, user }) {
       }
 
       const response = await axios.post(
-        "http://192.168.187.126:5000/upload",
+        `https://lion-optimal-sawfish.ngrok-free.app/api/send-voice-command`, //server interacting api
         formData,
         {
           headers: {
@@ -90,21 +93,11 @@ export default function Home({ dispatch, user }) {
           },
         }
       );
-      Alert.alert(
-          "Success",
-          "Command uploaded successfully",
-      );
+      Alert.alert("Success", response.data.message);
       console.log("Transcribed text:", response.data);
-
     } catch (error) {
-      console.error(
-        "Failed to stop recording or convert speech to text",
-        error
-      );
-      Alert.alert(
-        "Error",
-        "Failed to stop recording or convert speech to text"
-      );
+      console.error("An error occured on backend", error);
+      Alert.alert("Error", "An error occurd on backend");
     }
   };
 
@@ -141,3 +134,5 @@ export default function Home({ dispatch, user }) {
     </>
   );
 }
+//status
+// for login email and password return user_id, full_name, email

@@ -78,17 +78,18 @@ async function check_cred(email, password, dispatch, setErr) {
   }
   try {
     handleLoader();
-    const ip_address = Constants.expoConfig.extra.IP_ADDRESS;
-    const port = Constants.expoConfig.extra.PORT;
-    // Construct URL with parameters
-    const url = `http://${ip_address}:${port}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-
-    // Set a timeout value (in milliseconds)
-    const timeoutMs = 6000; // 6 seconds
-
-    // Send GET request with timeout
+    const timeoutMs = 30000;
     const response = await Promise.race([
-      fetch(url),
+      fetch(`https://lion-optimal-sawfish.ngrok-free.app/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      }),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Request timed out")), timeoutMs)
       ),
@@ -103,17 +104,23 @@ async function check_cred(email, password, dispatch, setErr) {
         const dataJson = JSON.parse(data);
 
         console.log("Response from server:", data);
-        setErr("");
-        dispatch({
-          type: "homeScreen",
-          payload: {
-            full_name: dataJson.full_name,
-            email: dataJson.email,
-            password: dataJson.password,
-            profile_pic_path: dataJson.profile_pic_path,
-            auth_key: dataJson.auth_key,
-          },
-        });
+        console.log("Response from server:", dataJson.success);
+        if (dataJson.success === true) {
+          setErr("");
+          dispatch({
+            type: "homeScreen",
+            payload: {
+              user_id: dataJson.user.user_id,
+              full_name: dataJson.user.full_name,
+              email: dataJson.user.email,
+              password: dataJson.password,
+              profile_pic_path: dataJson.profile_pic_path,
+              auth_key: dataJson.auth_key,
+            },
+          });
+        } else if (dataJson.success === false) {
+          setErr("Please check your credentials again");
+        }
       } else {
         // If request fails, set error message
         setErr("Please check your credentials again");
